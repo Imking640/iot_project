@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Room 401 - People Count Tracker</title>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body style="background-color: #00d5ff; color: #fff; font-family: sans-serif; text-align: center;">
+  <h2>👥 Person Count vs Time (Room 401)</h2>
+  <div id="plot" style="width: 90%; max-width: 900px; margin: auto;"></div>
+
+  <script>
+    const ip = "http://192.168.221.133/count"; // Change to your ESP32's IP
+    let timeData = [];
+    let countData = [];
+
+    Plotly.newPlot('plot', [{
+      x: timeData,
+      y: countData,
+      mode: 'lines+markers',
+      line: { color: '#00ffff' },
+      marker: { color: '#00ff88' },
+      name: 'Person Count'
+    }], {
+      title: 'Person Count Over Time',
+      xaxis: {
+        title: 'Time (24h format)',
+        showline: true,
+        linecolor: '#00ffff',
+        linewidth: 3,
+        tickfont: {
+          family: 'Arial Black, sans-serif',
+          color: '#00ffff',
+          size: 14
+        },
+        titlefont: {
+          family: 'Arial Black, sans-serif',
+          color: '#00ffff',
+          size: 16
+        }
+      },
+      yaxis: {
+        title: 'Person Count',
+        rangemode: 'tozero',
+        showline: true,
+        linecolor: '#00ffff',
+        linewidth: 3,
+        tickfont: {
+          family: 'Arial Black, sans-serif',
+          color: '#00ffff',
+          size: 14
+        },
+        titlefont: {
+          family: 'Arial Black, sans-serif',
+          color: '#00ffff',
+          size: 16
+        }
+      },
+      plot_bgcolor: '#1a1a1a',
+      paper_bgcolor: '#1a1a1a',
+      font: { color: '#ffffff' }
+    });
+
+    function fetchData() {
+      fetch(ip)
+        .then(response => response.json())
+        .then(data => {
+          timeData.push(data.time);
+          countData.push(data.count);
+
+          // Keep only latest 20 points
+          if (timeData.length > 20) {
+            timeData.shift();
+            countData.shift();
+          }
+
+          Plotly.update('plot', {
+            x: [timeData],
+            y: [countData]
+          });
+        })
+        .catch(err => console.error("Fetch error: ", err));
+    }
+
+    // Fetch data every 2 seconds
+    setInterval(fetchData, 2000);
+  </script>
+</body>
+</html>

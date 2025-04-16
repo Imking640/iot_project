@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room 401</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: black;
+            color: white;
+            font-family: 'Orbitron', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
+            text-align: center;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        h1, .room-number, button, p {
+            text-shadow: 0 0 10px #00d4ff, 0 0 20px rgba(0, 212, 255, 0.8);
+        }
+        
+        .room-number {
+            text-shadow: 0 0 20px #00ffcc, 0 0 40px rgba(0, 255, 204, 0.9);
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            width: 100%;
+        }
+
+        .header .icon {
+            width: 150px;
+            height: 250px;
+        }
+
+        .header-text {
+            text-align: center;
+            flex-grow: 1;
+        }
+
+        h1 {
+            font-size: 50px;
+            margin-bottom: 0px;
+        }
+
+        .room-number {
+            color: #00ffcc;
+            font-size: 85px;
+            display: block;
+        }
+
+        .underline {
+            width: 100%;
+            height: 5px;
+            background-color: #00ffcc;
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 150px;
+            margin: 50px 0;
+            border-radius: 30px;
+        }
+
+        #tab1, #tab2, #sendThreshold {
+            font-family: 'Orbitron', sans-serif;
+            background: #00d4ff;
+            padding: 10px 30px;
+            border: none;
+            font-size: 40px;
+            cursor: pointer;
+            border-radius: 15px;
+            font-weight: bold;
+            transition: 0.3s;
+            box-shadow: 0 0 15px #f9f9f9, 0 0 30px rgba(0, 212, 255, 0.519);
+        }
+        
+        #tab1:hover, #tab2:hover, #sendThreshold:hover {
+            background: #90fbff;
+            transform: scale(1.1);
+            box-shadow: 0 0 20px #a7fff8, 0 0 40px rgba(0, 212, 255, 0.8);
+        }
+        
+        .icon, .light {
+            filter: drop-shadow(0 0 15px #ffffff) drop-shadow(0 0 30px rgba(0, 212, 255, 0.8));
+            transition: 0.3s ease-in-out;
+        }
+        
+        .icon:hover, .light:hover {
+            filter: drop-shadow(0 0 25px #fdfdfd) drop-shadow(0 0 50px rgba(0, 212, 255, 1));
+            transform: scale(1.05);
+        }
+        
+        .content {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin-top: 60px;
+            padding-right: 160px;
+        }
+
+        .count-section {
+            flex: 1;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-right: 9px;
+            padding-left: 20px;
+        }
+
+        .count-box {
+            background: gray;
+            color: black;
+            font-size: 80px;
+            padding: 30px 50px;
+            display: inline-block;
+            border-radius: 20px;
+            margin-bottom: 10px;
+            min-width: 200px;
+        }
+        
+        .room-access {
+            padding-top: 31px;
+        }
+        
+        .label {
+            background: #ccff33;
+            color: black;
+            font-size: 30px;
+            padding: 15px 30px;
+            display: inline-block;
+            border-radius: 12px;
+            margin-top: 10px;
+        }
+
+        .lights-container {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 20px;
+        }
+
+        .light {
+            width: 135px;
+            height: 120px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        
+        .connection-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .connected {
+            background-color: rgba(0, 255, 0, 0.3);
+            color: #00ff00;
+        }
+        
+        .disconnected {
+            background-color: rgba(255, 0, 0, 0.3);
+            color: #ff0000;
+        }
+        
+        .threshold-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 30px;
+        }
+        
+        .threshold-input {
+            font-family: 'Orbitron', sans-serif;
+            background: gray;
+            color: black;
+            font-size: 30px;
+            padding: 15px;
+            border-radius: 15px;
+            border: none;
+            width: 200px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .threshold-info {
+            background-color: rgba(0, 212, 255, 0.3);
+            padding: 10px 20px;
+            border-radius: 10px;
+            margin-top: 10px;
+            font-size: 18px;
+            display: none;
+        }
+        
+        @keyframes textGlow {
+            0% { text-shadow: 0 0 10px #00d4ff, 0 0 20px rgba(0, 212, 255, 0.7); }
+            50% { text-shadow: 0 0 15px #00ffcc, 0 0 30px rgba(0, 255, 204, 1); }
+            100% { text-shadow: 0 0 10px #00d4ff, 0 0 20px rgba(0, 212, 255, 0.7); }
+        }
+
+        h1, .room-number {
+            animation: textGlow 2s infinite alternate;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="bgCanvas"></canvas>
+    
+    <div class="container">
+        <div class="header">
+            <img src="guard.png" class="icon" alt="Guard Icon">
+            <div class="header-text">
+                <h1>WELCOME TO ROOM</h1>
+                <span class="room-number">401</span>
+                <div class="underline"></div>
+            </div>
+            <img src="guard.png" class="icon" alt="Guard Icon">
+        </div>
+        
+        <div class="buttons">
+            <button id="tab1"><a href="graph.html">COUNT VS TIME</a></button>
+            <button id="tab2"><a href=http://192.168.247.192>HEATMAP</a></button>
+        </div>
+
+        <div class="content">
+            <div class="count-section">
+                <div class="count-box">0</div>
+                <p class="label">COUNT VS TIME</p>
+            </div>
+
+            <div class="room-access">
+                <div class="lights-container">
+                    <img src="red.png" class="light red-light" alt="Red Light">
+                    <img src="green.png" class="light green-light" alt="Green Light">
+                </div>
+                <p class="label">ROOM ACCESS</p>
+            </div>
+        </div>
+        
+        <div class="threshold-container">
+            <p class="label">SET THRESHOLD</p>
+            <input type="number" class="threshold-input" id="thresholdInput" min="0" value="1" placeholder="Enter threshold">
+            <button id="sendThreshold">SEND THRESHOLD</button>
+            <div id="thresholdInfo" class="threshold-info">Threshold data sent successfully!</div>
+        </div>
+    </div>
+    
+    <div id="connectionStatus" class="connection-status disconnected">DISCONNECTED</div>
+
+    <script>
+        // Background Animation
+        document.addEventListener("DOMContentLoaded", function () {
+            const canvas = document.getElementById("bgCanvas");
+            const ctx = canvas.getContext("2d");
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            window.addEventListener("resize", () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            });
+
+            const particles = [];
+            const particleCount = 40;
+
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    this.size = Math.random() * 3 + 2;
+                    this.speedX = (Math.random() - 0.5) * 1.5;
+                    this.speedY = (Math.random() - 0.5) * 1.5;
+                    this.alpha = Math.random() * 0.5 + 0.3;
+                    this.color = Math.random() > 0.5 ? "rgba(0, 212, 255, 1)" : "rgba(0, 255, 204, 1)";
+                }
+                
+                update() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+
+                    if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                    if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+                }
+                
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.shadowColor = this.color;
+                    ctx.shadowBlur = 15;
+                    ctx.fill();
+                }
+            }
+
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+
+            function drawGrid() {
+                ctx.strokeStyle = "rgba(0, 255, 204, 0.1)";
+                ctx.lineWidth = 0.6;
+
+                for (let x = 0; x < canvas.width; x += 100) {
+                    for (let y = 0; y < canvas.height; y += 100) {
+                        ctx.beginPath();
+                        ctx.moveTo(x, y);
+                        ctx.lineTo(x + 100, y + 100);
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                drawGrid();
+                
+                particles.forEach(particle => {
+                    particle.update();
+                    particle.draw();
+                });
+                
+                requestAnimationFrame(animate);
+            }
+
+            animate();
+            
+            // Data Fetching
+            const countBox = document.querySelector(".count-box");
+            const redLight = document.querySelector(".red-light");
+            const greenLight = document.querySelector(".green-light");
+            const connectionStatus = document.getElementById("connectionStatus");
+            const thresholdInput = document.getElementById("thresholdInput");
+            const sendThresholdBtn = document.getElementById("sendThreshold");
+            const thresholdInfo = document.getElementById("thresholdInfo");
+            
+            // Default state
+            greenLight.style.opacity = "0.5";
+            redLight.style.opacity = "1";
+            
+            async function fetchPeopleCount() {
+                try {
+                    // Replace with your ESP32 server IP
+                    const response = await fetch('http://192.168.221.133/count', {
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    countBox.textContent = data.count || "0";
+                    
+                    // Update lights based on count
+                    if (data.count > 0) {
+                        redLight.style.opacity = "0.5";
+                        greenLight.style.opacity = "1";
+                    } else {
+                        greenLight.style.opacity = "0.5";
+                        redLight.style.opacity = "1";
+                    }
+                    
+                    // Update connection status
+                    connectionStatus.textContent = "CONNECTED";
+                    connectionStatus.className = "connection-status connected";
+                    
+                    return true;
+                } catch (error) {
+                    console.error("Error fetching people count:", error);
+                    connectionStatus.textContent = "DISCONNECTED";
+                    connectionStatus.className = "connection-status disconnected";
+                    return false;
+                }
+            }
+            
+            // Function to send threshold data to the ESP32
+            async function sendThresholdData() {
+                const thresholdValue = parseInt(thresholdInput.value);
+                
+                if (isNaN(thresholdValue) || thresholdValue < 0) {
+                    thresholdInfo.textContent = "Please enter a valid threshold value";
+                    thresholdInfo.style.display = "block";
+                    thresholdInfo.style.backgroundColor = "rgba(255, 0, 0, 0.3)";
+                    setTimeout(() => {
+                        thresholdInfo.style.display = "none";
+                    }, 3000);
+                    return;
+                }
+                
+                try {
+                    // Replace with your ESP32 server IP
+                    const response = await fetch('http://192.168.221.133/threshold', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ threshold: thresholdValue })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    console.log("Threshold set response:", data);
+                    
+                    // Show success message
+                    thresholdInfo.textContent = "Threshold data sent successfully!";
+                    thresholdInfo.style.display = "block";
+                    thresholdInfo.style.backgroundColor = "rgba(0, 255, 0, 0.3)";
+                    setTimeout(() => {
+                        thresholdInfo.style.display = "none";
+                    }, 3000);
+                    
+                } catch (error) {
+                    console.error("Error sending threshold data:", error);
+                    thresholdInfo.textContent = "Failed to send threshold data";
+                    thresholdInfo.style.display = "block";
+                    thresholdInfo.style.backgroundColor = "rgba(255, 0, 0, 0.3)";
+                    setTimeout(() => {
+                        thresholdInfo.style.display = "none";
+                    }, 3000);
+                }
+            }
+            
+            // Add event listener to send threshold button
+            sendThresholdBtn.addEventListener("click", sendThresholdData);
+            
+            // Initial fetch
+            fetchPeopleCount();
+            
+            // Set up periodic fetching (every 2 seconds)
+            const fetchInterval = setInterval(async () => {
+                const success = await fetchPeopleCount();
+                if (!success) {
+                    // If failed 5 times in a row, might want to handle differently
+                    console.warn("Persistent connection failure");
+                }
+            }, 2000);
+            
+            // Manual light control (optional)
+            redLight.addEventListener("click", function() {
+                // In a real implementation, you would send a command to the ESP32
+                redLight.style.opacity = "0.5";
+                greenLight.style.opacity = "1";
+            });
+            
+            greenLight.addEventListener("click", function() {
+                // In a real implementation, you would send a command to the ESP32
+                greenLight.style.opacity = "0.5";
+                redLight.style.opacity = "1";
+            });
+        });
+    </script>
+</body>
+</html>

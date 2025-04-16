@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ESP32-CAM Live Stream</title>
+  <style>
+    body {
+      background-color: black;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .stream-container {
+      border: 5px solid #00ffcc;
+      border-radius: 10px;
+      padding: 10px;
+      background-color: #111;
+    }
+
+    img {
+      width: 640px;
+      height: 480px;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="stream-container">
+    <img src="http://192.168.247.192:81/stream" alt="ESP32-CAM Stream">
+  </div>
+</body>
+</html>
