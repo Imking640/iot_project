@@ -3,13 +3,30 @@
 <head>
   <title>Room 401 - People Count Tracker</title>
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <style>
+    button {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #005577;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0077aa;
+    }
+  </style>
 </head>
 <body style="background-color: #00d5ff; color: #fff; font-family: sans-serif; text-align: center;">
-  <h2>👥 Person Count vs Time (Room 401)</h2>
+  <h2> Person Count vs Time (Room 401)</h2>
   <div id="plot" style="width: 90%; max-width: 900px; margin: auto;"></div>
+  <button onclick="saveAndReset()">Save Graph & Reset</button>
+  <button onclick="window.location.href='collected-data.html'"> View Collected Data</button>
 
   <script>
-    const ip = "http://192.168.221.133/count"; // Change to your ESP32's IP
+    const ip = "http://192.168.221.133/count";
     let timeData = [];
     let countData = [];
 
@@ -22,39 +39,8 @@
       name: 'Person Count'
     }], {
       title: 'Person Count Over Time',
-      xaxis: {
-        title: 'Time (24h format)',
-        showline: true,
-        linecolor: '#00ffff',
-        linewidth: 3,
-        tickfont: {
-          family: 'Arial Black, sans-serif',
-          color: '#00ffff',
-          size: 14
-        },
-        titlefont: {
-          family: 'Arial Black, sans-serif',
-          color: '#00ffff',
-          size: 16
-        }
-      },
-      yaxis: {
-        title: 'Person Count',
-        rangemode: 'tozero',
-        showline: true,
-        linecolor: '#00ffff',
-        linewidth: 3,
-        tickfont: {
-          family: 'Arial Black, sans-serif',
-          color: '#00ffff',
-          size: 14
-        },
-        titlefont: {
-          family: 'Arial Black, sans-serif',
-          color: '#00ffff',
-          size: 16
-        }
-      },
+      xaxis: { title: 'Time (24h format)' },
+      yaxis: { title: 'Person Count', rangemode: 'tozero' },
       plot_bgcolor: '#1a1a1a',
       paper_bgcolor: '#1a1a1a',
       font: { color: '#ffffff' }
@@ -67,7 +53,6 @@
           timeData.push(data.time);
           countData.push(data.count);
 
-          // Keep only latest 20 points
           if (timeData.length > 20) {
             timeData.shift();
             countData.shift();
@@ -81,8 +66,36 @@
         .catch(err => console.error("Fetch error: ", err));
     }
 
-    // Fetch data every 2 seconds
     setInterval(fetchData, 2000);
+
+    function saveAndReset() {
+      Plotly.toImage(document.getElementById('plot'), { format: 'png' }).then(function (dataUrl) {
+        let maxInflow = { diff: -Infinity, index: 0 };
+        let maxOutflow = { diff: Infinity, index: 0 };
+
+        for (let i = 1; i < countData.length; i++) {
+          let diff = countData[i] - countData[i - 1];
+          if (diff > maxInflow.diff) maxInflow = { diff, index: i };
+          if (diff < maxOutflow.diff) maxOutflow = { diff, index: i };
+        }
+
+        const analysis = {
+          inflowPeriod: `${timeData[maxInflow.index - 1]} – ${timeData[maxInflow.index]}`,
+          outflowPeriod: `${timeData[maxOutflow.index - 1]} – ${timeData[maxOutflow.index]}`,
+          timestamp: new Date().toLocaleString(),
+          image: dataUrl
+        };
+
+        let stored = JSON.parse(localStorage.getItem('savedGraphs') || '[]');
+        stored.push(analysis);
+        localStorage.setItem('savedGraphs', JSON.stringify(stored));
+
+        timeData = [];
+        countData = [];
+        Plotly.update('plot', { x: [[]], y: [[]] });
+        alert("Graph saved with inflow/outflow and reset!");
+      });
+    }
   </script>
 </body>
 </html>
