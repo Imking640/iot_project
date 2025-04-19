@@ -259,7 +259,7 @@
         
         <div class="buttons">
             <button id="tab1"><a href="graph.html">COUNT VS TIME</a></button>
-            <button id="tab2"><a href=http://192.168.247.192>HEATMAP</a></button>
+            <button id="tab2">HEATMAP</button>
         </div>
 
         <div class="content">
@@ -380,7 +380,7 @@
             async function fetchPeopleCount() {
                 try {
                     // Replace with your ESP32 server IP
-                    const response = await fetch('http://192.168.221.133/count', {
+                    const response = await fetch('http://192.168.247.133/count', {
                         headers: {
                             'Accept': 'application/json'
                         }
@@ -394,7 +394,7 @@
                     countBox.textContent = data.count || "0";
                     
                     // Update lights based on count
-                    if (data.count > 0) {
+                    if (data.count < data.threshold) {
                         redLight.style.opacity = "0.5";
                         greenLight.style.opacity = "1";
                     } else {
@@ -431,7 +431,7 @@
                 
                 try {
                     // Replace with your ESP32 server IP
-                    const response = await fetch('http://192.168.221.133/threshold', {
+                    const response = await fetch('http://192.168.247.133/threshold', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
