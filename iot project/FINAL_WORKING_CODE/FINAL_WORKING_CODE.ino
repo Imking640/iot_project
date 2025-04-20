@@ -14,7 +14,7 @@ const long  gmtOffset_sec = 19800; // GMT+5:30
 const int   daylightOffset_sec = 0;
 
 // External server to fetch threshold from
-const char* thresholdServerUrl = "http://your-server-url.com/get-threshold"; // Replace with your server URL
+const char* thresholdServerUrl = "http://192.168.247.133/threshold"; // Replace with your server URL
 const unsigned long thresholdUpdateInterval = 60000; // Update threshold every 60 seconds
 unsigned long lastThresholdUpdateTime = 0;
 
