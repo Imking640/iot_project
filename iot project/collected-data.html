@@ -32,41 +32,55 @@
     .delete-btn:hover {
       background-color: #e04d4d;
     }
+    .stats {
+      border: 2px solid #4caf50;
+      border-radius: 10px;
+      padding: 15px;
+      background-color: #e7fbe7;
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
   <h2>📁 Collected Graph Data</h2>
   <div id="entries"></div>
+  <div id="statistics" class="stats"></div>
 
   <script>
     const container = document.getElementById('entries');
+    const statisticsDiv = document.getElementById('statistics');
 
     const fakeGraphs = [
       {
         date: "April 16, 2025",
-        inflow: "19:30 – 19:45",
-        outflow: "19:15 – 19:30",
+        inflow: { min: "19:15", max: "19:30" },
+        outflow: { min: "19:00", max: "19:15" },
         image: "graphs/graph_11.png"
       },
       {
         date: "April 17, 2025",
-        inflow: "11:15 – 11:30",
-        outflow: "11:30 – 11:45",
+        inflow: { min: "11:00", max: "11:15" },
+        outflow: { min: "11:15", max: "11:30" },
         image: "graphs/graph_12.png"
       },
       {
         date: "April 18, 2025",
-        inflow: "07:30 – 08:00",
-        outflow: "09:15 – 09:30",
+        inflow: { min: "07:00", max: "07:30" },
+        outflow: { min: "09:00", max: "09:15" },
         image: "graphs/graph_13.png"
       },
       {
         date: "April 19, 2025",
-        inflow: "11:15 – 11:30",
-        outflow: "11:30 – 12:00",
+        inflow: { min: "11:00", max: "11:15" },
+        outflow: { min: "11:30", max: "12:00" },
         image: "graphs/graph_14.png"
       }
     ];
+
+    let inflowMinTimes = [];
+    let inflowMaxTimes = [];
+    let outflowMinTimes = [];
+    let outflowMaxTimes = [];
 
     fakeGraphs.forEach((g, i) => {
       const div = document.createElement('div');
@@ -74,11 +88,17 @@
       div.innerHTML = `
         <h3>📊 Saved Entry ${i + 1} - ${g.date}</h3>
         <img src="${g.image}" alt="Graph - ${g.date}">
-        <p><strong>Max Inflow:</strong> ${g.inflow}</p>
-        <p><strong>Max Outflow:</strong> ${g.outflow}</p>
+        <p><strong>Min Inflow:</strong> ${g.inflow.min} | <strong>Max Inflow:</strong> ${g.inflow.max}</p>
+        <p><strong>Min Outflow:</strong> ${g.outflow.min} | <strong>Max Outflow:</strong> ${g.outflow.max}</p>
         <button class="delete-btn" onclick="deleteFakeGraph(this)">Delete</button>
       `;
       container.appendChild(div);
+
+      // Collect min and max inflow and outflow times
+      inflowMinTimes.push(g.inflow.min);
+      inflowMaxTimes.push(g.inflow.max);
+      outflowMinTimes.push(g.outflow.min);
+      outflowMaxTimes.push(g.outflow.max);
     });
 
     const savedGraphs = JSON.parse(localStorage.getItem('savedGraphs') || '[]');
@@ -89,11 +109,17 @@
       div.innerHTML = `
         <h3>📊 Saved Entry ${index + fakeGraphs.length + 1} - ${item.timestamp}</h3>
         <img src="${item.image}" alt="Saved Graph">
-        <p><strong>Max Inflow:</strong> ${item.inflowPeriod}</p>
-        <p><strong>Max Outflow:</strong> ${item.outflowPeriod}</p>
+        <p><strong>Min Inflow:</strong> ${item.inflowPeriod.min} | <strong>Max Inflow:</strong> ${item.inflowPeriod.max}</p>
+        <p><strong>Min Outflow:</strong> ${item.outflowPeriod.min} | <strong>Max Outflow:</strong> ${item.outflowPeriod.max}</p>
         <button class="delete-btn" onclick="deleteSavedGraph(${index})">Delete</button>
       `;
       container.appendChild(div);
+
+      // Collect min and max inflow and outflow times
+      inflowMinTimes.push(item.inflowPeriod.min);
+      inflowMaxTimes.push(item.inflowPeriod.max);
+      outflowMinTimes.push(item.outflowPeriod.min);
+      outflowMaxTimes.push(item.outflowPeriod.max);
     });
 
     function deleteFakeGraph(button) {
@@ -107,6 +133,30 @@
       localStorage.setItem('savedGraphs', JSON.stringify(savedGraphs));
       window.location.reload();
     }
+
+    function calculateAverageTime(times) {
+      const minutesArray = times.map(t => {
+        const [hours, minutes] = t.split(':').map(Number);
+        return hours * 60 + minutes;
+      });
+      const avgMinutes = minutesArray.reduce((a, b) => a + b, 0) / minutesArray.length;
+      const avgHours = Math.floor(avgMinutes / 60);
+      const avgMins = Math.round(avgMinutes % 60);
+      return ${avgHours.toString().padStart(2, '0')}:${avgMins.toString().padStart(2, '0')};
+    }
+
+    // Calculate average min and max inflow and outflow times
+    const avgMinInflowTime = calculateAverageTime(inflowMinTimes);
+    const avgMaxInflowTime = calculateAverageTime(inflowMaxTimes);
+    const avgMinOutflowTime = calculateAverageTime(outflowMinTimes);
+    const avgMaxOutflowTime = calculateAverageTime(outflowMaxTimes);
+
+    // Display statistics
+    statisticsDiv.innerHTML = `
+      <h3>📈 Statistics</h3>
+      <p><strong>Probable Inflow Time Range:</strong> ${avgMinInflowTime} – ${avgMaxInflowTime}</p>
+      <p><strong>Probable Outflow Time Range:</strong> ${avgMinOutflowTime} – ${avgMaxOutflowTime}</p>
+    `;
   </script>
 </body>
 </html>
